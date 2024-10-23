@@ -1,4 +1,4 @@
-import { REDIS_YUNZAI_DEER_PIPE, REDIS_YUNZAI_DEER_PIPE_FRIENDS } from "../constants/core.js";
+import { REDIS_YUNZAI_DEER_PIPE, REDIS_YUNZAI_DEER_PIPE_DISABLE, REDIS_YUNZAI_DEER_PIPE_FRIENDS } from "../constants/core.js";
 import { generateImage } from "../utils/core.js";
 import { redisExistAndGetKey, redisSetKey } from "../utils/redis-util.js";
 
@@ -112,6 +112,14 @@ export class DeerPipe extends plugin {
         const date = new Date();
         // 获取当前是几号
         const day = date.getDate();
+        let blackList = await redisExistAndGetKey(REDIS_YUNZAI_DEER_PIPE_DISABLE) || {};
+        if (blackList[deerTrustUserId] === undefined) {
+            blackList[deerTrustUserId] = [];
+        }
+        if (!blackList[deerTrustUserId].includes(user_id.toString())) {
+            e.reply("你已被🔒，不能🦌🦌", true);
+            return;
+        }
         const signData = await this.sign(user_id, day);
         const raw = await generateImage(date, card || nickname, signData[user_id]);
         await e.reply(["成功🦌了", segment.image(raw)], true);
@@ -121,6 +129,14 @@ export class DeerPipe extends plugin {
         const day = parseInt(/\d+/.exec(e.msg.trim())[0]);
         const date = new Date();
         const nowDay = date.getDate();
+        let blackList = await redisExistAndGetKey(REDIS_YUNZAI_DEER_PIPE_DISABLE) || {};
+        if (blackList[deerTrustUserId] === undefined) {
+            blackList[deerTrustUserId] = [];
+        }
+        if (!blackList[deerTrustUserId].includes(user_id.toString())) {
+            e.reply("你已被🔒，不能🦌🦌", true);
+            return;
+        }
         // 如果超过日子就不理
         if (day > nowDay || day === 0) {
             logger.info("[鹿] 超过当前日期");
@@ -205,11 +221,20 @@ export class DeerPipe extends plugin {
         if (whiteList[deerTrustUserId] === undefined) {
             whiteList[deerTrustUserId] = [];
         }
-        // 检测指定🦌友是否包含当前发送用户
-        if (!whiteList[deerTrustUserId].includes(user_id.toString())) {
-            e.reply("ta 不是你的🦌友哦！\n可以让 ta 通过 `添加🦌友` 命令添加到你为 ta 的🦌友哦！", true);
+        let blackList = await redisExistAndGetKey(REDIS_YUNZAI_DEER_PIPE_DISABLE) || {};
+        // 第一次初始化
+        if (blackList[deerTrustUserId] === undefined) {
+            blackList[deerTrustUserId] = [];
+        }
+        if (!blackList[deerTrustUserId].includes(user_id.toString())) {
+            e.reply("🦌友已被🔒，不能🦌🦌", true);
             return;
         }
+        // 检测指定🦌友是否包含当前发送用户
+        // if (!whiteList[deerTrustUserId].includes(user_id.toString())) {
+        //     e.reply("ta 不是你的🦌友哦！\n可以让 ta 通过 `添加🦌友` 命令添加到你为 ta 的🦌友哦！", true);
+        //     return;
+        // }
         // 获取当前日期
         const date = new Date();
         // 获取当前是几号
