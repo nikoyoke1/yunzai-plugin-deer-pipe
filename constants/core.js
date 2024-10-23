@@ -13,3 +13,6 @@ export const REDIS_YUNZAI_DEER_PIPE = "Yz:deer_pipe:core:sign";
 
 // 🦌友存储位置
 export const REDIS_YUNZAI_DEER_PIPE_FRIENDS = "Yz:deer_pipe:core:friends";
+
+// 贞操锁存储位置
+export const REDIS_YUNZAI_DEER_PIPE_DISABLE = "Yz:deer_pipe:core:disable";
